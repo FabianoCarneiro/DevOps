@@ -1,0 +1,114 @@
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+	    //nome do projeto
+		print project.name
+		try{
+			//lista url do repositorio
+			print ";"+project.scm.getUserRemoteConfigs().url
+		}
+		catch (Exception e){
+			// não tem scm configurado 
+			print ";"+'n/a'
+		}
+		//ulitmo user que executou build
+		try{
+			print ";"+ project.getLastSuccessfulBuild().getEnvironment().get('BUILD_USER_ID') + '- id:' + project.getLastSuccessfulBuild().getEnvironment().get('BUILD_ID')
+			}
+		catch (Exception e){ 
+			print ";"+'null'
+		}		
+		
+		//parametros utilizados no ulimo build
+		try{
+        	print ';'+ project.getLastBuild().getBuildVariables()
+		}
+		catch (Exception e){
+			print ";"+'null'
+		}
+		
+		//data ultimo build
+		try {
+			print ";" + project.getLastBuild().timestamp.time
+		}		
+		catch (Exception e){
+			print ";"+'null'
+		}
+		
+		//lista de plugins
+		for(hudson.tasks.Builder plugin : project.getBuilders()){
+			//job tem plugin do sonar configurado 
+			if (plugin instanceof hudson.plugins.sonar.SonarRunnerBuilder){
+				print ";"+"SonarPlugin"
+			}
+		}
+		//println project.getBuildersList().descriptor
+      println ''
+   }
+ }
+ 
+ 
+ //
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      try{
+        	println project.name + '>>'+ project.getLastBuild().getBuildStatusSummary().message //.getEnvironment().get('BUILD_USER')
+      }
+      catch (Exception e){
+      }
+   }
+}
+
+ 
+ //lista propriedades configuradas no plugin do sonar 
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      println project.name
+		for(hudson.tasks.Builder plugin : project.getBuilders()){
+			if (plugin instanceof hudson.plugins.sonar.SonarRunnerBuilder){
+				println plugin.getProperties()
+			}
+		}
+   }
+ }
+ 
+ 
+ //lista comando shell do job
+  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      println project.name
+		for(hudson.tasks.Builder plugin : project.getBuilders()){			
+			if (plugin instanceof hudson.tasks.Shell){
+				println plugin.getContents()
+			}
+		}
+   }
+ }
+ 
+ 
+ //Lista plugins do job
+ for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      println project.name
+		for(hudson.tasks.Builder plugin : project.getBuilders()){			
+			//if (plugin instanceof hudson.tasks.Shell){
+				println project.getBuildersList().descriptor
+			//}
+		}
+   }
+ }
+ 
+ 
+ ///pegar usuario do ultimo build 
+  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      println project.name
+		for(hudson.tasks.Builder plugin : project.getBuilders()){			
+			//if (plugin instanceof hudson.tasks.Shell){
+				println project.getLastBuild().getActions().get(0)//.getCauses().userId
+			//}
+		}
+   }
+ }
+ 
+ 
+ 
