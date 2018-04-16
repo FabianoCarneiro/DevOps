@@ -2,6 +2,7 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
     if(project instanceof FreeStyleProject) {
 	    //nome do projeto
 		print project.name
+		
 		try{
 			//lista url do repositorio
 			print ";"+project.scm.getUserRemoteConfigs().url
@@ -10,17 +11,22 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 			// não tem scm configurado 
 			print ";"+'n/a'
 		}
-		//ulitmo user que executou build
-		try{
-			print ";"+ project.getLastSuccessfulBuild().getEnvironment().get('BUILD_USER_ID') + '- id:' + project.getLastSuccessfulBuild().getEnvironment().get('BUILD_ID')
-			}
-		catch (Exception e){ 
-			print ";"+'null'
-		}		
 		
-		//parametros utilizados no ulimo build
+		// user que executou ultimo build
 		try{
-        	print ';'+ project.getLastBuild().getBuildVariables()
+		  for(hudson.model.Action act : project.getLastBuild().getActions()){
+			if (act instanceof hudson.model.CauseAction){
+			  print ";"+act.getCauses().userId
+			}
+		  } 
+		}
+		catch (Exception e){
+		  print ";"+'null'
+		}
+		
+		//parametros utilizados no ultimo build
+		try{
+        	print ';'//+ project.getLastBuild().getBuildVariables()
 		}
 		catch (Exception e){
 			print ";"+'null'
@@ -38,77 +44,102 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 		for(hudson.tasks.Builder plugin : project.getBuilders()){
 			//job tem plugin do sonar configurado 
 			if (plugin instanceof hudson.plugins.sonar.SonarRunnerBuilder){
-				print ";"+"SonarPlugin"
+				print ";Plugin Sonar" 
+				//exibe as propriedades que tenham sonar exclusions
+				if(plugin.getProperties().contains('.exclusions')){
+					print ';'+ plugin.getProperties().split()
+				}				
+			}
+			else if (plugin instanceof hudson.tasks.Shell){
+              if(plugin.getContents().contains('sonar-scanner')){
+              	print ';Shell SonarScanner'
+              }else if(plugin.getContents().contains('sonar:sonar')){
+						print ';Shell SonarMaven'
+              }
+			}                          
+					else if (plugin instanceof hudson.tasks.Maven){
+				if(plugin.targets.contains('sonar:sonar')){
+					print ';Plugin Maven'
+				}
 			}
 		}
-		//println project.getBuildersList().descriptor
+		
       println ''
    }
  }
- 
- 
- //
-for(AbstractItem project : hudson.model.Hudson.instance.items) {
-    if(project instanceof FreeStyleProject) {
-      try{
-        	println project.name + '>>'+ project.getLastBuild().getBuildStatusSummary().message //.getEnvironment().get('BUILD_USER')
-      }
-      catch (Exception e){
-      }
-   }
-}
+ /////fim do principal
+				
+ ///inicio testes 
 
- 
- //lista propriedades configuradas no plugin do sonar 
-for(AbstractItem project : hudson.model.Hudson.instance.items) {
-    if(project instanceof FreeStyleProject) {
-      println project.name
-		for(hudson.tasks.Builder plugin : project.getBuilders()){
-			if (plugin instanceof hudson.plugins.sonar.SonarRunnerBuilder){
-				println plugin.getProperties()
-			}
-		}
-   }
- }
- 
- 
- //lista comando shell do job
-  for(AbstractItem project : hudson.model.Hudson.instance.items) {
-    if(project instanceof FreeStyleProject) {
-      println project.name
-		for(hudson.tasks.Builder plugin : project.getBuilders()){			
-			if (plugin instanceof hudson.tasks.Shell){
-				println plugin.getContents()
-			}
-		}
-   }
- }
- 
- 
- //Lista plugins do job
  for(AbstractItem project : hudson.model.Hudson.instance.items) {
     if(project instanceof FreeStyleProject) {
       println project.name
-		for(hudson.tasks.Builder plugin : project.getBuilders()){			
+		for(hudson.tasks.Builder plugin : project.getBuilders()){	
+			println plugin
 			//if (plugin instanceof hudson.tasks.Shell){
-				println project.getBuildersList().descriptor
-			//}
+            //  if(plugin.getContents().contains('sonar:sonar')){
+            //  	println 'scanner'
+             // }
+			}
 		}
    }
  }
  
  
- ///pegar usuario do ultimo build 
   for(AbstractItem project : hudson.model.Hudson.instance.items) {
     if(project instanceof FreeStyleProject) {
-      println project.name
-		for(hudson.tasks.Builder plugin : project.getBuilders()){			
-			//if (plugin instanceof hudson.tasks.Shell){
-				println project.getLastBuild().getActions().get(0)//.getCauses().userId
-			//}
+		for(hudson.tasks.Builder plugin : project.getBuilders()){	
+			if (plugin instanceof hudson.tasks.Maven){
+				if (println plugin.targets.contains('sonar:sonar')){
+					println 'sonar maven'
+				}
+			}
 		}
    }
- }
+  }
+ 
+ 
+ 
+ JAVA-BR-ISB-SPB-GESTAO-DOMINIOS
+
+ 
+///pegar usuario do ultimo build 
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+  if(project instanceof FreeStyleProject) {
+    println '>>>>>'+ project.name
+         //println project.getLastBuild().getActions().getCauses()
+   
+    for(hudson.model.Action act : project.getLastBuild().getActions()){
+      println "act>>>>"+act.getClass()
+      if (act instanceof hudson.model.CauseAction){
+          println "act>>>>"+act.getClass()
+        println "action"+act.getCauses().getClass()//.userId
+        //println "action"+act.getCauses().userId
+      }else{println 'não'}
+    }
+
+  }
+}
+ 
+ 
+///pegar usuario do ultimo build 
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+  if(project instanceof FreeStyleProject) {
+    println project.name
+    
+    try{
+      for(hudson.model.Action act : project.getLastBuild().getActions()){
+        if (act instanceof hudson.model.CauseAction){
+          print act.getCauses().userId
+        }
+      } 
+    }
+	catch (Exception e){
+      print ";"+'null'
+    }
+  }
+}
+ 
  
  
  
