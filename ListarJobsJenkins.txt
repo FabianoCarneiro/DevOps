@@ -1,6 +1,7 @@
+//freestyle
 for(AbstractItem project : hudson.model.Hudson.instance.items) {
-    if(project instanceof FreeStyleProject) {
-	    //nome do projeto
+	if(project instanceof FreeStyleProject) {
+		//nome do projeto
 		print project.name
 		
 		try{
@@ -26,7 +27,7 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 		
 		//parametros utilizados no ultimo build
 		try{
-        	print ';'//+ project.getLastBuild().getBuildVariables()
+			print ';'//+ project.getLastBuild().getBuildVariables()
 		}
 		catch (Exception e){
 			print ";"+'null'
@@ -51,26 +52,189 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 				}				
 			}
 			else if (plugin instanceof hudson.tasks.Shell){
-              if(plugin.getContents().contains('sonar-scanner')){
-              	print ';Shell SonarScanner'
-              }else if(plugin.getContents().contains('sonar:sonar')){
+			  if(plugin.getContents().contains('sonar-scanner')){
+				print ';Shell SonarScanner'
+				//if(plugin.getContents().contains('sonar.exclusions')){
+				//	print ';'''+ plugin.getContents() + ''''
+				//}	
+			  }else if(plugin.getContents().contains('sonar:sonar')){
 						print ';Shell SonarMaven'
-              }
+			  }
 			}                          
-					else if (plugin instanceof hudson.tasks.Maven){
+			else if (plugin instanceof hudson.tasks.Maven){
 				if(plugin.targets.contains('sonar:sonar')){
 					print ';Plugin Maven'
 				}
 			}
 		}
 		
-      println ''
+	  println ''
    }
  }
  /////fim do principal
 				
- ///inicio testes 
+				
 
+//smoke BUSCAR OS JOBS COM CUCUMBER E EXIT 0
+for(hudson.model.AbstractItem project : hudson.model.Hudson.instance.items) {
+  if (project.name.contains('SMOKE-')){
+    //lista de plugins
+    for(tasks.Builder plugin : project.getBuilders()){
+      if (plugin instanceof hudson.tasks.Shell){        
+        if (plugin.getContents().contains('Cucumber still in development')||plugin.getContents().contains('exit 0')){
+		 //nome do projeto
+		 print project.name + "|" + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS"))
+          if (project.getLastBuild() != null){
+            for(hudson.model.Action act : project.getLastBuild().getActions()){
+              if (act instanceof hudson.model.CauseAction){
+                try{
+					//nome do chamador
+					print "|" + act.getCauses().upstreamProject 
+				}
+				catch (Exception e){
+					print ";"+'n/a'
+				}      
+              }
+            }           
+          } 
+          println ""
+        }
+      }
+    }
+  }
+}
+
+
+//SMOKE PARA BUSCAR ULTIMO LOG COM A INFORMAÇÃO CORRETA DE EXECUÇÃO TESTE "Running TestSuite"
+import jenkins.model.*	
+import jenkins.*	
+import hudson.model.*
+import hudson.*	
+
+print 'JobName|LastBuild|startedBy'
+println ""
+for(hudson.model.AbstractItem project : hudson.model.Hudson.instance.items) {
+  if (project.name.contains('SMOKE-')){
+	  if (project.getLastBuild() != null){
+		if (project.getLastBuild().getLog().contains('Running TestSuite')){
+			print project.name + "|" + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS"))
+            for(hudson.model.Action act : project.getLastBuild().getActions()){
+              if (act instanceof hudson.model.CauseAction){
+                try{
+					//nome do chamador
+					print "|" + act.getCauses().upstreamProject 
+				}
+				catch (Exception e){
+					print ";"+'n/a'
+				}      
+              }
+            } 			
+		  //println  "|" + project.getLastBuild().getLog()
+			println ""
+		}   
+	} 
+  }
+}
+ 
+ 
+ 
+ 
+ 
+ //tentativa de achar parametros do APPREGISTER
+  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      	if (project.name.contains('JAVA-BR-BCL-ATL-BACKOFFICE')){
+            println project.buildWrappers
+              //for(hudson.plugins plugin : project.plugin()){	
+                  //println plugin
+                  //if (plugin instanceof hudson.tasks.Shell){
+                  //  if(plugin.getContents().contains('sonar:sonar')){
+                  //  	println 'scanner'
+                   // }
+                  //}
+              //}
+        }
+   }
+ }
+ 
+   for(AbstractItem project : hudson.model.Hudson.instance.items) {
+	if (project.name.contains('JAVA-BR-BCL-ATL-BACKOFFICE')){
+		println project.JobProperty
+	}
+
+ }
+ Jenkins.instance.getAllItems().each {it ->	
+  if (it.name.contains('JAVA-BR-BCL-ATL-BACKOFFICE')){
+		println it.name
+	}
+}
+ 
+  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      println project.name
+		for(hudson.tasks.Publisher plugin : project.getPublishersList()){	
+			println plugin
+			}
+		}
+   }
+   
+  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      //	println project.name
+	  if (project.name.equals('JAVA-BR-BCL-ATL-BACKOFFICE')){
+        for(hudson.tasks.BuildStep plugin : project.getAllProperties()){	
+         // println plugin
+		  
+		  if(plugin instanceof org.jenkinsci.plugins.envinject.EnvInjectJobProperty){
+			println plugin.getInfo()
+		  }
+		  
+        }
+      }
+    }
+  }
+JAVA-BR-BCL-ATL-BACKOFFICE
+hudson.security.AuthorizationMatrixProperty@22faba00
+jenkins.model.BuildDiscarderProperty@86a9e8b
+hudson.model.ParametersDefinitionProperty@1cbeb9d5
+com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty@55af16c9
+hudson.plugins.promoted_builds.JobPropertyImpl@22729cc6
+org.jenkinsci.plugins.envinject.EnvInjectJobProperty@7e30c0c5
+  
+  
+ 
+ 
+/// javas
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+	if (project.name.contains('JAVA-')){
+  		print project.name 
+		//data ultimo build
+		try {
+			print ";" + project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS")
+		}		
+		catch (Exception e){
+			print ";"+'null'
+		}
+
+			
+			try{
+				//lista url do repositorio
+				print ";"+project.scm.getUserRemoteConfigs().url
+			}
+			catch (Exception e){
+				// não tem scm configurado 
+				print ";"+'n/a'
+			}      
+	
+     println ''
+	}
+ }		
+				
+				
+				
+				
+				
+ ///inicio testes 
  for(AbstractItem project : hudson.model.Hudson.instance.items) {
     if(project instanceof FreeStyleProject) {
       println project.name
@@ -85,8 +249,7 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
    }
  }
  
- 
-  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+   for(AbstractItem project : hudson.model.Hudson.instance.items) {
     if(project instanceof FreeStyleProject) {
 		for(hudson.tasks.Builder plugin : project.getBuilders()){	
 			if (plugin instanceof hudson.tasks.Maven){
@@ -108,7 +271,7 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
   if(project instanceof FreeStyleProject) {
     println '>>>>>'+ project.name
          //println project.getLastBuild().getActions().getCauses()
-   
+   x
     for(hudson.model.Action act : project.getLastBuild().getActions()){
       println "act>>>>"+act.getClass()
       if (act instanceof hudson.model.CauseAction){
@@ -139,6 +302,27 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
     }
   }
 }
+
+
+ 
+ 
+ 
+println '**************************INICIO DE PROCESSAMENTO*******************************'
+println 'JOB|DTULTIMOBUILD|DTULTIMOSUCESSO|DTLASTBUILD|DTULTIMOSUCESSO|'
+ 
+def qt=0
+ 
+Jenkins.instance.getAllItems().each {it ->
+	if (it instanceof org.jenkinsci.plugins.workflow.job.WorkflowJob){
+		println it.displayName +'|' + (it.lastBuild== null ? 'N/A' :it.lastBuild.time.format("YYYY-MM-dd HH:MM:SS")) + '|' + (it.lastSuccessfulBuild== null ? 'N/A' :it.lastSuccessfulBuild.time.format("YYYY-MM-dd HH:MM:SS"))+'|' + (it.lastBuild== null ? 'N/A' :it.lastBuild.time.format("YYYYMM"))+'|' + (it.lastSuccessfulBuild== null ? 'N/A' :it.lastSuccessfulBuild.time.format("YYYYMM"))+'|'
+      qt++
+    }
+}
+println 'Total de Jobs:'+qt
+println '**************************FIM DE PROCESSAMENTO*******************************'
+ 
+
+	
  
  
  
