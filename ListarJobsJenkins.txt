@@ -73,13 +73,19 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
  }
  /////fim do principal
 				
+<<<<<<< HEAD
 					
+=======
+				
+
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
 //smoke BUSCAR OS JOBS COM CUCUMBER E EXIT 0
 for(hudson.model.AbstractItem project : hudson.model.Hudson.instance.items) {
   if (project.name.contains('SMOKE-')){
     //lista de plugins
     for(tasks.Builder plugin : project.getBuilders()){
       if (plugin instanceof hudson.tasks.Shell){        
+<<<<<<< HEAD
         if ((plugin.getContents().contains('Cucumber still in development')||plugin.getContents().contains('Smoke test still in development')||plugin.getContents().contains('exit 0'))&&!plugin.getContents().contains('exit 1')){
 		 //nome do projeto
 		 print project.name 		 
@@ -106,12 +112,35 @@ for(hudson.model.AbstractItem project : hudson.model.Hudson.instance.items) {
            }           
          } 
          println ""
+=======
+        if (plugin.getContents().contains('Cucumber still in development')||plugin.getContents().contains('exit 0')){
+		 //nome do projeto
+		 print project.name + "|" + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS"))
+          if (project.getLastBuild() != null){
+            for(hudson.model.Action act : project.getLastBuild().getActions()){
+              if (act instanceof hudson.model.CauseAction){
+                try{
+					//nome do chamador
+					print "|" + act.getCauses().upstreamProject 
+				}
+				catch (Exception e){
+					print ";"+'n/a'
+				}      
+              }
+            }           
+          } 
+          println ""
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
         }
       }
     }
   }
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
 //SMOKE PARA BUSCAR ULTIMO LOG COM A INFORMAÇÃO CORRETA DE EXECUÇÃO TESTE "Running TestSuite"
 import jenkins.model.*	
 import jenkins.*	
@@ -142,6 +171,7 @@ for(hudson.model.AbstractItem project : hudson.model.Hudson.instance.items) {
 	} 
   }
 }
+<<<<<<< HEAD
   
  
  //JOBS Fortify tempo de execução
@@ -228,6 +258,76 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 
 
 
+=======
+ 
+ 
+ 
+ 
+ 
+ //tentativa de achar parametros do APPREGISTER
+  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      	if (project.name.contains('JAVA-BR-BCL-ATL-BACKOFFICE')){
+            println project.buildWrappers
+              //for(hudson.plugins plugin : project.plugin()){	
+                  //println plugin
+                  //if (plugin instanceof hudson.tasks.Shell){
+                  //  if(plugin.getContents().contains('sonar:sonar')){
+                  //  	println 'scanner'
+                   // }
+                  //}
+              //}
+        }
+   }
+ }
+ 
+   for(AbstractItem project : hudson.model.Hudson.instance.items) {
+	if (project.name.contains('JAVA-BR-BCL-ATL-BACKOFFICE')){
+		println project.JobProperty
+	}
+
+ }
+ Jenkins.instance.getAllItems().each {it ->	
+  if (it.name.contains('JAVA-BR-BCL-ATL-BACKOFFICE')){
+		println it.name
+	}
+}
+ 
+  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      println project.name
+		for(hudson.tasks.Publisher plugin : project.getPublishersList()){	
+			println plugin
+			}
+		}
+   }
+   
+  for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+      //	println project.name
+	  if (project.name.equals('JAVA-BR-BCL-ATL-BACKOFFICE')){
+        for(hudson.tasks.BuildStep plugin : project.getAllProperties()){	
+         // println plugin
+		  
+		  if(plugin instanceof org.jenkinsci.plugins.envinject.EnvInjectJobProperty){
+			println plugin.getInfo()
+		  }
+		  
+        }
+      }
+    }
+  }
+JAVA-BR-BCL-ATL-BACKOFFICE
+hudson.security.AuthorizationMatrixProperty@22faba00
+jenkins.model.BuildDiscarderProperty@86a9e8b
+hudson.model.ParametersDefinitionProperty@1cbeb9d5
+com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty@55af16c9
+hudson.plugins.promoted_builds.JobPropertyImpl@22729cc6
+org.jenkinsci.plugins.envinject.EnvInjectJobProperty@7e30c0c5
+  
+  
+ 
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
  
 /// javas
 for(AbstractItem project : hudson.model.Hudson.instance.items) {
@@ -239,6 +339,7 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 		}		
 		catch (Exception e){
 			print ";"+'null'
+<<<<<<< HEAD
 		}			
 		try{
 			//lista url do repositorio
@@ -248,12 +349,31 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 			// não tem scm configurado 
 			print ";"+'n/a'
 		}      
+=======
+		}
+
+			
+			try{
+				//lista url do repositorio
+				print ";"+project.scm.getUserRemoteConfigs().url
+			}
+			catch (Exception e){
+				// não tem scm configurado 
+				print ";"+'n/a'
+			}      
+	
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
      println ''
 	}
  }		
 				
 				
 				
+<<<<<<< HEAD
+=======
+				
+				
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
  ///inicio testes 
  for(AbstractItem project : hudson.model.Hudson.instance.items) {
     if(project instanceof FreeStyleProject) {
@@ -269,12 +389,36 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
    }
  }
  
+<<<<<<< HEAD
+=======
+   for(AbstractItem project : hudson.model.Hudson.instance.items) {
+    if(project instanceof FreeStyleProject) {
+		for(hudson.tasks.Builder plugin : project.getBuilders()){	
+			if (plugin instanceof hudson.tasks.Maven){
+				if (println plugin.targets.contains('sonar:sonar')){
+					println 'sonar maven'
+				}
+			}
+		}
+   }
+  }
+ 
+ 
+ 
+ JAVA-BR-ISB-SPB-GESTAO-DOMINIOS
+
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
  
 ///pegar usuario do ultimo build 
 for(AbstractItem project : hudson.model.Hudson.instance.items) {
   if(project instanceof FreeStyleProject) {
     println '>>>>>'+ project.name
+<<<<<<< HEAD
     println project.getLastBuild().getActions()
+=======
+         //println project.getLastBuild().getActions().getCauses()
+   x
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
     for(hudson.model.Action act : project.getLastBuild().getActions()){
       println "act>>>>"+act.getClass()
       if (act instanceof hudson.model.CauseAction){
@@ -309,7 +453,11 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 
  
  
+<<<<<<< HEAD
 ////JENKINS DOCKER 
+=======
+ 
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
 println '**************************INICIO DE PROCESSAMENTO*******************************'
 println 'JOB|DTULTIMOBUILD|DTULTIMOSUCESSO|DTLASTBUILD|DTULTIMOSUCESSO|'
  
@@ -325,11 +473,15 @@ println 'Total de Jobs:'+qt
 println '**************************FIM DE PROCESSAMENTO*******************************'
  
 
+<<<<<<< HEAD
  SE(TIPO.ERRO(PROCV($A2;Dados!E:E;1;FALSO))<>7;PROCV($A2;Dados!E:E;1;FALSO);0)
  SE(TIPO.ERRO(PROCV($A2;Dados!E:E;1;FALSO))<>7;ESCOLHER(PROCV($A2;Dados!E:E;1;FALSO));"Os intervalos não interceptam";"O divisor é zero"))]
  SE(TIPO.ERRO(A3)<3;ESCOLHER(TIPO.ERRO(A3);"Os intervalos não interceptam";"O divisor é zero"))
 	
+=======
+	
  
+>>>>>>> 82d834ef47d23b4d580269215148dd1e682f1436
  
  
  
