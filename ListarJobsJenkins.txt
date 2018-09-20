@@ -1,6 +1,7 @@
+//freestyle
 for(AbstractItem project : hudson.model.Hudson.instance.items) {
-    if(project instanceof FreeStyleProject) {
-	    //nome do projeto
+	if(project instanceof FreeStyleProject) {
+		//nome do projeto
 		print project.name
 		
 		try{
@@ -26,7 +27,7 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 		
 		//parametros utilizados no ultimo build
 		try{
-        	print ';'//+ project.getLastBuild().getBuildVariables()
+			print ';'//+ project.getLastBuild().getBuildVariables()
 		}
 		catch (Exception e){
 			print ";"+'null'
@@ -51,26 +52,209 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
 				}				
 			}
 			else if (plugin instanceof hudson.tasks.Shell){
-              if(plugin.getContents().contains('sonar-scanner')){
-              	print ';Shell SonarScanner'
-              }else if(plugin.getContents().contains('sonar:sonar')){
+			  if(plugin.getContents().contains('sonar-scanner')){
+				print ';Shell SonarScanner'
+				//if(plugin.getContents().contains('sonar.exclusions')){
+				//	print ';'''+ plugin.getContents() + ''''
+				//}	
+			  }else if(plugin.getContents().contains('sonar:sonar')){
 						print ';Shell SonarMaven'
-              }
+			  }
 			}                          
-					else if (plugin instanceof hudson.tasks.Maven){
+			else if (plugin instanceof hudson.tasks.Maven){
 				if(plugin.targets.contains('sonar:sonar')){
 					print ';Plugin Maven'
 				}
 			}
 		}
 		
-      println ''
+	  println ''
    }
  }
  /////fim do principal
 				
- ///inicio testes 
+					
+//smoke BUSCAR OS JOBS COM CUCUMBER E EXIT 0
+for(hudson.model.AbstractItem project : hudson.model.Hudson.instance.items) {
+  if (project.name.contains('SMOKE-')){
+    //lista de plugins
+    for(tasks.Builder plugin : project.getBuilders()){
+      if (plugin instanceof hudson.tasks.Shell){        
+        if ((plugin.getContents().contains('Cucumber still in development')||plugin.getContents().contains('Smoke test still in development')||plugin.getContents().contains('exit 0'))&&!plugin.getContents().contains('exit 1')){
+		 //nome do projeto
+		 print project.name 		 
+		 print "|" + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS"))
+	     if (project.getLastBuild() != null){
+           for(hudson.model.Action act : project.getLastBuild().getActions()){
+             if (act instanceof hudson.model.CauseAction){
+               try{
+                  jobPai = Jenkins.instance.getItemByFullName(act.getCauses().upstreamProject)
+		          //nome do chamador
+			      print "|" + act.getCauses().upstreamProject 
+				  print "|"  + ( jobPai.getLastBuild()==null ? 'n/a' :jobPai.getLastBuild().getEnvironment()["SUPERINTENDENTE"])
+				  print "|"  + ( jobPai.getLastBuild()==null ? 'n/a' :jobPai.getLastBuild().getEnvironment()["TRIBO"])
+				  print "|"  + ( jobPai.getLastBuild()==null ? 'n/a' :jobPai.getLastBuild().getEnvironment()["SQUAD"])
+				  print "|"  + ( jobPai.getLastBuild()==null ? 'n/a' :jobPai.getLastBuild().getEnvironment()["SIGLA"])
+				  print "|"  + ( jobPai.getLastBuild()==null ? 'n/a' :jobPai.getLastBuild().getEnvironment()["TECNOLOGIA"])
+				  print "|"  + ( jobPai.getLastBuild()==null ? 'n/a' :jobPai.getLastBuild().getEnvironment()["SYSTEM_TEAM"])						                   
+			   }
+			   catch (Exception e){
+                 				print e 
+			                      print ";"+'n/a'
+			   }      
+             }
+           }           
+         } 
+         println ""
+        }
+      }
+    }
+  }
+}
 
+//SMOKE PARA BUSCAR ULTIMO LOG COM A INFORMAÇÃO CORRETA DE EXECUÇÃO TESTE "Running TestSuite"
+import jenkins.model.*	
+import jenkins.*	
+import hudson.model.*
+import hudson.*	
+
+print 'JobName|LastBuild|startedBy'
+println ""
+for(hudson.model.AbstractItem project : hudson.model.Hudson.instance.items) {
+  if (project.name.contains('SMOKE-')){
+	  if (project.getLastBuild() != null){
+		if (project.getLastBuild().getLog().contains('Running TestSuite')){
+			print project.name + "|" + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS"))
+            for(hudson.model.Action act : project.getLastBuild().getActions()){
+              if (act instanceof hudson.model.CauseAction){
+                try{
+					//nome do chamador
+					print "|" + act.getCauses().upstreamProject 
+				}
+				catch (Exception e){
+					print ";"+'n/a'
+				}      
+              }
+            } 			
+		  //println  "|" + project.getLastBuild().getLog()
+			println ""
+		}   
+	} 
+  }
+}
+  
+ 
+ //JOBS Fortify tempo de execução
+ print 'JobName|LastBuild|duration'
+ println ""
+for(hudson.model.AbstractItem project : hudson.model.Hudson.instance.items) {
+  if (project.name.contains('FORTIFY-')){
+    //lista de plugins
+    for(tasks.Builder plugin : project.getBuilders()){
+      if (plugin instanceof hudson.tasks.Shell){        
+		 //nome do projeto
+		print project.name + "|" + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS"))
+		print "|" + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().duration)
+		println ""
+      }
+    }
+  }
+}
+ 
+ 
+ 
+//parametros do APPREGISTER
+print 'JobName|LastBuild|SUPERINTENDENTE|TRIBO|SQUAD|SIGLA|TECNOLOGIA|SYSTEM_TEAM'
+println ""
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+	if(project instanceof FreeStyleProject) {
+		if (!project.name.contains('SMOKE-')&&!project.name.contains('DB-')&&!project.name.contains('FORTIFY-')){
+			if (project.getLastBuild() != null){
+				try{
+					print project.name + "|" + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS"))
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["SUPERINTENDENTE"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["TRIBO"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["SQUAD"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["SIGLA"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["TECNOLOGIA"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["SYSTEM_TEAM"])	
+					println "" 
+				}
+				catch (Exception e){
+					print 'n/a'
+					println "" 
+				}				
+			}
+	
+		}  
+    }
+}
+ 
+ 
+//CHAMADA DO SMOKE
+print 'JOBNAME|SMOKETEST|LastBuild|SUPERINTENDENTE|TRIBO|SQUAD|SIGLA|TECNOLOGIA|SYSTEM_TEAM'
+println ""
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+  if(project instanceof FreeStyleProject && !project.name.contains("SMOKE-")){
+    print project.name + "|"
+    for(hudson.model.Action act : project.getActions()){
+      if(act instanceof  hudson.plugins.promoted_builds.PromotedProjectAction){
+	    for(hudson.plugins.promoted_builds.PromotionProcess promotion : act.getProcesses()){
+		  for(hudson.tasks.BuildStep step : promotion.getBuildSteps()){
+		    if(step instanceof hudson.plugins.parameterizedtrigger.TriggerBuilder){
+              if(step.getConfigs()["projects"].contains("SMOKE-")){
+				print step.getConfigs()["projects"]
+				try{
+					print "|"  + (project.getLastBuild() == null ? 'n/a' :project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS"))
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["SUPERINTENDENTE"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["TRIBO"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["SQUAD"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["SIGLA"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["TECNOLOGIA"])
+					print "|"  + ( project.getLastBuild()==null ? 'n/a' :project.getLastBuild().getEnvironment()["SYSTEM_TEAM"])											
+				  }
+				catch (Exception e){
+					print 'n/a'
+				}					  			  
+			  }		  	 
+			}
+		  }
+		}
+      }
+    }
+  println "" 
+  }   
+} 
+
+
+
+ 
+/// javas
+for(AbstractItem project : hudson.model.Hudson.instance.items) {
+	if (project.name.contains('JAVA-')){
+  		print project.name 
+		//data ultimo build
+		try {
+			print ";" + project.getLastBuild().timestamp.time.format("YYYY-MM-dd HH:MM:SS")
+		}		
+		catch (Exception e){
+			print ";"+'null'
+		}			
+		try{
+			//lista url do repositorio
+			print ";"+project.scm.getUserRemoteConfigs().url
+		}
+		catch (Exception e){
+			// não tem scm configurado 
+			print ";"+'n/a'
+		}      
+     println ''
+	}
+ }		
+				
+				
+				
+ ///inicio testes 
  for(AbstractItem project : hudson.model.Hudson.instance.items) {
     if(project instanceof FreeStyleProject) {
       println project.name
@@ -86,29 +270,11 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
  }
  
  
-  for(AbstractItem project : hudson.model.Hudson.instance.items) {
-    if(project instanceof FreeStyleProject) {
-		for(hudson.tasks.Builder plugin : project.getBuilders()){	
-			if (plugin instanceof hudson.tasks.Maven){
-				if (println plugin.targets.contains('sonar:sonar')){
-					println 'sonar maven'
-				}
-			}
-		}
-   }
-  }
- 
- 
- 
- JAVA-BR-ISB-SPB-GESTAO-DOMINIOS
-
- 
 ///pegar usuario do ultimo build 
 for(AbstractItem project : hudson.model.Hudson.instance.items) {
   if(project instanceof FreeStyleProject) {
     println '>>>>>'+ project.name
-         //println project.getLastBuild().getActions().getCauses()
-   
+    println project.getLastBuild().getActions()
     for(hudson.model.Action act : project.getLastBuild().getActions()){
       println "act>>>>"+act.getClass()
       if (act instanceof hudson.model.CauseAction){
@@ -139,6 +305,30 @@ for(AbstractItem project : hudson.model.Hudson.instance.items) {
     }
   }
 }
+
+
+ 
+ 
+////JENKINS DOCKER 
+println '**************************INICIO DE PROCESSAMENTO*******************************'
+println 'JOB|DTULTIMOBUILD|DTULTIMOSUCESSO|DTLASTBUILD|DTULTIMOSUCESSO|'
+ 
+def qt=0
+ 
+Jenkins.instance.getAllItems().each {it ->
+	if (it instanceof org.jenkinsci.plugins.workflow.job.WorkflowJob){
+		println it.displayName +'|' + (it.lastBuild== null ? 'N/A' :it.lastBuild.time.format("YYYY-MM-dd HH:MM:SS")) + '|' + (it.lastSuccessfulBuild== null ? 'N/A' :it.lastSuccessfulBuild.time.format("YYYY-MM-dd HH:MM:SS"))+'|' + (it.lastBuild== null ? 'N/A' :it.lastBuild.time.format("YYYYMM"))+'|' + (it.lastSuccessfulBuild== null ? 'N/A' :it.lastSuccessfulBuild.time.format("YYYYMM"))+'|'
+      qt++
+    }
+}
+println 'Total de Jobs:'+qt
+println '**************************FIM DE PROCESSAMENTO*******************************'
+ 
+
+ SE(TIPO.ERRO(PROCV($A2;Dados!E:E;1;FALSO))<>7;PROCV($A2;Dados!E:E;1;FALSO);0)
+ SE(TIPO.ERRO(PROCV($A2;Dados!E:E;1;FALSO))<>7;ESCOLHER(PROCV($A2;Dados!E:E;1;FALSO));"Os intervalos não interceptam";"O divisor é zero"))]
+ SE(TIPO.ERRO(A3)<3;ESCOLHER(TIPO.ERRO(A3);"Os intervalos não interceptam";"O divisor é zero"))
+	
  
  
  
