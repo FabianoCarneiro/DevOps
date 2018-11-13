@@ -1,4 +1,6 @@
 
+CALL `s2m-devops`.`prc_adoption`('2018-09-28', 0);
+
 ################PARA MARCAR TECNOLOGIAS COMO DEVOPS
 update SiglasORBS set devops=1 where SiglasORBS.PlataformaTecnologica in (
 "Altair",
@@ -55,6 +57,31 @@ select * from SiglasORBS s
 						and s.Devops=0
 						
 ################
+
+
+
+
+
+#lista blacklist
+SELECT p.acronym, r.justify FROM acronym_restriction r, project p
+where r.project_id=p.id and
+ p.acronym IN
+ ( "BDQ","SDI",
+"GAV","GES",
+"LDA","WFS",
+"GLB","WG",
+"VMR","BDP",
+"SSD","Y3",
+"JJ","IK",
+"NJ","IFR",
+"YRK","MIF",
+"ODS","DYY",
+"AG" )
+ 
+ 
+
+
+
 												
 ### remover siglas duplicadas						
 DELETE FROM project WHERE id IN		
@@ -72,15 +99,96 @@ DELETE FROM project WHERE id IN
 	
 					) as qy
 )
-												
-												
------
-select * from SiglasORBS s		WHERE s.Devops=1									
------
-select * from project where 	acronym = "MAI"						
------
-select * from component	c	where c.project_id =	853
+	
 
+### REMOVER COMPONENT
+
+START TRANSACTION;
+
+DELETE FROM rundeck_deploy WHERE component_id IN(
+												  SELECT id FROM component 
+												  WHERE NAME IN(
+																"JAVA-BR-SNT-NMWSRV-ACSECBRS-CLIENT",
+																"JAVA-BR-SNT-NMWSRV-ACWIBPRTPORTALPF-CLIENT",
+																"JAVA-BR-SNT-NMWSRV-ASISTENCIA-CANAL-CLIENT",
+																"JAVA-BR-SNT-NMWSRV-BRAZIL-PDF-CREATOR",
+																"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-COMMONS",
+																"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-COMPONENTS",
+																"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-SECURITY",
+																"JAVA-BR-SNT-NMWSRV-SDK-IBPF-SECURITY",
+																"JAVA-BR-SNT-NMWSRV-SECURE-SIGNATURE",
+																"JAVA-BR-SNT-NMWSRV-WIBOFE-CLIENT",
+																"JAVA-BR-SNT-NMWSRV-WIBPRT-CLIENT",
+																"JAVA-BR-SNT-NMWSRV-WIBRMORECARGAMOVIL-CLIENT",
+																"JAVA-BR-SNT-NMWSRV-WIBRMORECARGAPROG-CLIENT",
+																"LIFERAY-BR-SNT-NMWMOD-WDRECMOVIL"
+																 )
+														)
+
+
+
+delete adoption, adoption_history, jenkins_build from jenkins_build join component on 
+                                                                       component.id=jenkins_build.component_id and
+       component.name IN(
+						"JAVA-BR-SNT-NMWSRV-ACSECBRS-CLIENT",
+						"JAVA-BR-SNT-NMWSRV-ACWIBPRTPORTALPF-CLIENT",
+						"JAVA-BR-SNT-NMWSRV-ASISTENCIA-CANAL-CLIENT",
+						"JAVA-BR-SNT-NMWSRV-BRAZIL-PDF-CREATOR",
+						"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-COMMONS",
+						"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-COMPONENTS",
+						"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-SECURITY",
+						"JAVA-BR-SNT-NMWSRV-SDK-IBPF-SECURITY",
+						"JAVA-BR-SNT-NMWSRV-SECURE-SIGNATURE",
+						"JAVA-BR-SNT-NMWSRV-WIBOFE-CLIENT",
+						"JAVA-BR-SNT-NMWSRV-WIBPRT-CLIENT",
+						"JAVA-BR-SNT-NMWSRV-WIBRMORECARGAMOVIL-CLIENT",
+						"JAVA-BR-SNT-NMWSRV-WIBRMORECARGAPROG-CLIENT",
+						"LIFERAY-BR-SNT-NMWMOD-WDRECMOVIL"
+
+						)            
+left join adoption on adoption.component_id=component.id 
+left join adoption_history on adoption_history.component_id=component.id; 
+
+delete squads_components from squads_components join component on squads_components.component_id = component.id where 
+       component_id=component.id and component.name in(
+														"JAVA-BR-SNT-NMWSRV-ACSECBRS-CLIENT",
+														"JAVA-BR-SNT-NMWSRV-ACWIBPRTPORTALPF-CLIENT",
+														"JAVA-BR-SNT-NMWSRV-ASISTENCIA-CANAL-CLIENT",
+														"JAVA-BR-SNT-NMWSRV-BRAZIL-PDF-CREATOR",
+														"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-COMMONS",
+														"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-COMPONENTS",
+														"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-SECURITY",
+														"JAVA-BR-SNT-NMWSRV-SDK-IBPF-SECURITY",
+														"JAVA-BR-SNT-NMWSRV-SECURE-SIGNATURE",
+														"JAVA-BR-SNT-NMWSRV-WIBOFE-CLIENT",
+														"JAVA-BR-SNT-NMWSRV-WIBPRT-CLIENT",
+														"JAVA-BR-SNT-NMWSRV-WIBRMORECARGAMOVIL-CLIENT",
+														"JAVA-BR-SNT-NMWSRV-WIBRMORECARGAPROG-CLIENT",
+														"LIFERAY-BR-SNT-NMWMOD-WDRECMOVIL"
+														); 
+
+
+delete from component where component.name in(
+												"JAVA-BR-SNT-NMWSRV-ACSECBRS-CLIENT",
+												"JAVA-BR-SNT-NMWSRV-ACWIBPRTPORTALPF-CLIENT",
+												"JAVA-BR-SNT-NMWSRV-ASISTENCIA-CANAL-CLIENT",
+												"JAVA-BR-SNT-NMWSRV-BRAZIL-PDF-CREATOR",
+												"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-COMMONS",
+												"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-COMPONENTS",
+												"JAVA-BR-SNT-NMWSRV-BRAZIL-PORTAL-SECURITY",
+												"JAVA-BR-SNT-NMWSRV-SDK-IBPF-SECURITY",
+												"JAVA-BR-SNT-NMWSRV-SECURE-SIGNATURE",
+												"JAVA-BR-SNT-NMWSRV-WIBOFE-CLIENT",
+												"JAVA-BR-SNT-NMWSRV-WIBPRT-CLIENT",
+												"JAVA-BR-SNT-NMWSRV-WIBRMORECARGAMOVIL-CLIENT",
+												"JAVA-BR-SNT-NMWSRV-WIBRMORECARGAPROG-CLIENT",
+												"LIFERAY-BR-SNT-NMWMOD-WDRECMOVIL"
+											  ); 
+COMMIT;
+
+
+
+########################################33333												
 update `s2m-devops`.SiglasORBS set Devops=1 
 `s2m-devops`.SiglasORBS where plataforma="MAINFRAME" AND
  PlataformaTecnologica="Não se aplica" and TipoTecnologia="Arquitetura"
@@ -97,47 +205,259 @@ select * from `s2m-devops`.project p  where
 	 						           PlataformaTecnologica="Não se aplica" and TipoTecnologia="Arquitetura")
 	 	and is_active=0
 	 	
-	 	
+delete from `s2m-devops`.delivery_manager  where
+			 registration_code in('601273','716048','717511') 
+and id not in(select delivery_manager_id from project )
 
 		
 		
-############adoção
+############adoção por componentes
+###com technology	  
+SELECT  
+	gest.name gestor,
+	dm.registration_code,
+	proj.acronym SIGLA,
+	t.name tecnologia,
+	c.name job,
+	a.scm_percentual, a.build_percentual, 
+	(a.quality_percentual) quality_percentual, 
+    (a.coverage_percentual) coverage_percentual, (a.security_percentual) security_percentual,  
+	(a.deploy_percentual) deploy_percentual, (a.functional_test_percentual) functional_test_percentual, a.adoption_percentual
+FROM 
+	   delivery_manager dm,
+	   project proj,
+	   `s2m-devops`.adoption a,
+	   `s2m-devops`.technology t,
+	   `s2m-devops`.component c,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 		 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND a.component_id=c.id AND proj.id = c.project_id AND
+	   dm.registration_code=gest.rcode AND c.technology_id=t.id AND
+	   proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+	   is_active = 1
+UNION ALL
+SELECT
+	gest.name gestor,
+	dm.registration_code,
+	proj.acronym SIGLA,
+	'tecnologia' tecnologia,
+	'job' job,
+	0 scm_percentual, 0 build_percentual, 
+	0 quality_percentual, 0 coverage_percentual, 0 security_percentual,  
+	0 deploy_percentual, 0 functional_test_percentual, 0 adoption_percentual
+FROM
+	delivery_manager dm,
+	project proj,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 		 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND    dm.registration_code=gest.rcode AND
+      proj.id NOT IN (SELECT project_id FROM component) AND 
+		proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+		is_active = 1
+		
+		
+		
 
+###sem a technology	   
 SELECT  
 	proj.acronym SIGLA,
-	gest.name,
+	gest.name gestor,
 	dm.registration_code,
 	proj.name PROJETO,
-	c.name,
-	a.scm_percentual, a.build_percentual, a.quality_percentual, 
-   a.coverage_percentual, a.security_percentual, a.deploy_percentual,
-   a.functional_test_percentual, a.base_date	  	
+	c.name job,
+	a.scm_percentual, a.build_percentual, 
+	(a.quality_percentual) quality_percentual, 
+    (a.coverage_percentual) coverage_percentual, (a.security_percentual) security_percentual,  
+	(a.deploy_percentual) deploy_percentual, (a.functional_test_percentual) functional_test_percentual, 
+	a.base_date	  	
 FROM 
-		delivery_manager dm,
+	   delivery_manager dm,
 	   project proj,
 	   `s2m-devops`.adoption a,
 	   `s2m-devops`.component c,
 		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
-		SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
-		SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
-		SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
-		SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
-		SELECT 'José Donato' as name, '649132' as rcode from dual union
-		SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
-		SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
-		SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
-		SELECT 'Richard Silva' as name, '699871' as rcode from dual union
-		SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
-		SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
-		select 'Suzan Barreto' as name,'588244' as rcode from dual union
-		select 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
-		select 'Americo Coltacci' as name,'318680' as rcode from dual union
-		select 'Sandra Andrade' as name,'649118' as rcode from dual union
-		SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 		 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
 WHERE proj.delivery_manager_id=dm.id AND a.component_id=c.id AND proj.id = c.project_id AND
-	   dm.registration_code=gest.rcode
-ORDER BY 3	
+	   dm.registration_code=gest.rcode AND
+	   proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r)
+UNION ALL
+SELECT
+	proj.acronym SIGLA,
+	gest.name gestor,
+	dm.registration_code,
+	proj.name PROJETO,
+	'job' job,
+	0 scm_percentual, 0 build_percentual, 
+	0 quality_percentual, 0 coverage_percentual, 0 security_percentual,  
+	0 deploy_percentual, 0 functional_test_percentual, 
+	'01/01/1900' base_date	  	
+FROM
+	delivery_manager dm,
+	project proj,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 		 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND    dm.registration_code=gest.rcode AND
+      proj.id NOT IN (SELECT project_id FROM component) AND 
+		proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+		is_active = 1
+ORDER BY 2,1
 
+
+		
+############adoção por siglas
+SELECT  
+	proj.acronym SIGLA,
+	gest.name gestor,
+	dm.registration_code,
+	AVG(a.scm_percentual) scm_percentual, AVG(a.build_percentual) build_percentual, 
+	AVG(a.quality_percentual) quality_percentual, 
+    AVG(a.coverage_percentual) coverage_percentual, AVG(a.security_percentual) security_percentual,  
+	AVG(a.deploy_percentual) deploy_percentual, AVG(a.functional_test_percentual) functional_test_percentual	
+FROM 
+	   delivery_manager dm,
+	   project proj,
+	   `s2m-devops`.adoption a,
+	   `s2m-devops`.component c,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 		 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND a.component_id=c.id AND proj.id = c.project_id AND
+	   dm.registration_code=gest.rcode AND is_active = 1 AND
+	   proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r)
+GROUP BY	proj.acronym, 	gest.name, 	dm.registration_code 
+UNION ALL
+SELECT
+	proj.acronym SIGLA,
+	gest.name gestor,
+	dm.registration_code,
+	0 scm_percentual, 0 build_percentual, 
+	0 quality_percentual, 0 coverage_percentual, 0 security_percentual,  
+	0 deploy_percentual, 0 functional_test_percentual
+FROM
+	delivery_manager dm,
+	project proj,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 		 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND dm.registration_code=gest.rcode AND
+      proj.id NOT IN (SELECT project_id FROM component) AND 
+		proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+		is_active = 1
+ORDER BY 2,1
 
 
 ######### adocao geral
@@ -152,29 +472,31 @@ delivery_manager dm,
 project proj,
 `s2m-devops`.adoption a,
 `s2m-devops`.component c,
-(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
-SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
-SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
-SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
-SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
-SELECT 'José Donato' as name, '649132' as rcode from dual union
-SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
-SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
-SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
-SELECT 'Richard Silva' as name, '699871' as rcode from dual union
-SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
-SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
-select 'Suzan Barreto' as name,'588244' as rcode from dual union
-select 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
-select 'Americo Coltacci' as name,'318680' as rcode from dual union
-select 'Sandra Andrade' as name,'649118' as rcode from dual union
-SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
 WHERE proj.delivery_manager_id=dm.id AND a.component_id=c.id AND proj.id = c.project_id AND  is_active = 1 AND
-dm.registration_code=gest.rcode
+dm.registration_code=gest.rcode AND proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r)
 group by proj.acronym, gest.name,dm.registration_code, proj.name
-
-union all
-
+UNION ALL
 SELECT
 proj.acronym SIGLA,
 gest.name,
@@ -184,28 +506,256 @@ proj.name PROJETO,
 FROM
 delivery_manager dm,
 project proj,
-(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
-SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
-SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
-SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
-SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
-SELECT 'José Donato' as name, '649132' as rcode from dual union
-SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
-SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
-SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
-SELECT 'Richard Silva' as name, '699871' as rcode from dual union
-SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
-SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
-select 'Suzan Barreto' as name,'588244' as rcode from dual union
-select 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
-select 'Americo Coltacci' as name,'318680' as rcode from dual union
-select 'Sandra Andrade' as name,'649118' as rcode from dual union
-SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
-WHERE proj.delivery_manager_id=dm.id AND    dm.registration_code=gest.rcode And
-proj.id NOT IN (SELECT project_id FROM component) AND is_active = 1
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND    dm.registration_code=gest.rcode AND
+      proj.id NOT IN (SELECT project_id FROM component) AND 
+		proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+		is_active = 1
 ORDER BY 2,1
 
 
+#### adocao geral com squad
+SELECT
+proj.acronym SIGLA,
+gest.name,
+dm.registration_code,
+proj.name PROJETO,s.name squad, t.name tribo,
+CEILING(sum(a.adoption_percentual)/count(proj.acronym)) Adocao
+FROM
+delivery_manager dm,
+project proj,
+`s2m-devops`.adoption a,
+`s2m-devops`.component c,
+`s2m-devops`.squads_components sq,
+`s2m-devops`.squad s, tribe t,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND a.component_id=c.id AND proj.id = c.project_id AND  proj.is_active = 1 AND
+dm.registration_code=gest.rcode AND  sq.component_id=c.id AND sq.squad_id=s.id AND t.id=s.tribe_id AND
+proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r)
+group by proj.acronym, gest.name,dm.registration_code, proj.name 
+UNION ALL
+SELECT
+proj.acronym SIGLA,
+gest.name,
+dm.registration_code,
+proj.name PROJETO,null,null,
+0 Adocao
+FROM
+delivery_manager dm,
+project proj,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND    dm.registration_code=gest.rcode AND
+      proj.id NOT IN (SELECT project_id FROM component) AND 
+		proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+		proj.is_active = 1
+ORDER BY 2,1
+
+
+
+######### total siglas elegivel não elegivel
+SELECT
+proj.acronym SIGLA,
+gest.name,
+dm.registration_code,
+proj.name PROJETO,s.name squad, t.name tribo,
+'Elegivel com adocao' Adocao
+FROM
+delivery_manager dm,
+project proj,
+`s2m-devops`.adoption a,
+`s2m-devops`.component c,
+`s2m-devops`.squads_components sq,
+`s2m-devops`.squad s, tribe t,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND a.component_id=c.id AND proj.id = c.project_id AND  proj.is_active = 1 AND
+dm.registration_code=gest.rcode AND  sq.component_id=c.id AND sq.squad_id=s.id AND t.id=s.tribe_id AND
+proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r)
+group by proj.acronym, gest.name,dm.registration_code, proj.name 
+UNION ALL
+SELECT
+proj.acronym SIGLA,
+gest.name,
+dm.registration_code,
+proj.name PROJETO,null,null,
+'Elegivel sem adocao' Adocao
+FROM
+delivery_manager dm,
+project proj,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND    dm.registration_code=gest.rcode AND
+      proj.id NOT IN (SELECT project_id FROM component) AND 
+		proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+		proj.is_active = 1
+UNION ALL
+SELECT
+proj.acronym SIGLA,
+gest.name,
+dm.registration_code,
+proj.name PROJETO,null,null,
+'Pipeline nao desenvolvido ou sem movimentação em 2018' Adocao
+FROM
+delivery_manager dm,
+project proj,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND    dm.registration_code=gest.rcode AND
+      proj.id NOT IN (SELECT project_id FROM component) AND 
+		proj.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+		proj.is_active = 0
+UNION ALL
+SELECT
+proj.acronym SIGLA,
+gest.name,
+dm.registration_code,
+proj.name PROJETO,null,null,
+'Blacklist' Adocao
+FROM
+delivery_manager dm,
+project proj,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE proj.delivery_manager_id=dm.id AND    dm.registration_code=gest.rcode AND
+      -- proj.id NOT IN (SELECT project_id FROM component) AND 
+	  proj.id IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) 				
+ORDER BY 2,1
 
 	
 #########Listar gestor siglas
@@ -213,27 +763,32 @@ SELECT
 	proj.acronym SIGLA,
 	gest.name,
 	dm.registration_code,
-	proj.name PROJETO
+	proj.name PROJETO,
+	proj.id 
 FROM 
 		delivery_manager dm,
 	   project proj,
 		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
-		SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
-		SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
-		SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
-		SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
-		SELECT 'José Donato' as name, '649132' as rcode from dual union
-		SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
-		SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
-		SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
-		SELECT 'Richard Silva' as name, '699871' as rcode from dual union
-		SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
-		SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
-		select 'Suzan Barreto' as name,'588244' as rcode from dual union
-		select 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
-		select 'Americo Coltacci' as name,'318680' as rcode from dual union
-		select 'Sandra Andrade' as name,'649118' as rcode from dual union
-		SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
 WHERE    proj.delivery_manager_id=dm.id
 	and   dm.registration_code=gest.rcode
 ORDER BY 3	
@@ -250,23 +805,27 @@ FROM
 	    project proj,
 	    squad sq,
 		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
-		SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
-		SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
-		SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
-		SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
-		SELECT 'José Donato' as name, '649132' as rcode from dual union
-		SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
-		SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
-		SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
-		SELECT 'Richard Silva' as name, '699871' as rcode from dual union
-		SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
-		SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
-		SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
-		SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
-		SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
-		SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
-		SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
-WHERE sq.tribe_id = tb.id
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Fabio Pereira' as name, '643466' as rcode from dual union 		 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest
+WHERE sq.tribetribe_id = tb.id
 	and   proj.delivery_manager_id=dm.id
 	and   dm.id=tb.delivery_manager_id
 	and   dm.registration_code=gest.rcode
@@ -1288,6 +1847,381 @@ and
 "ZCT",
 "ZT")
 
-	
-	
-	AID
+
+-- SELECT * FROM `s2m-devops`.delivery_manager
+SELECT project.*, gest.name FROM project,delivery_manager dm,
+		(SELECT 'Airton de Oliveira' as name, '18384' as rcode from dual union
+		 SELECT 'Arthur De Santis' as name, '707282' as rcode from dual union
+		 SELECT 'Fernando Luna' as name, '705113' as rcode from dual union
+		 SELECT 'Flavia Davoli' as name, '707231' as rcode from dual union
+		 SELECT 'João Carlos Garcia' as name, '600647' as rcode from dual union
+		 SELECT 'José Donato' as name, '649132' as rcode from dual union
+		 SELECT 'Marcel Pasini' as name, '649216' as rcode from dual union
+		 SELECT 'Ricardo Lima de Paula' as name, '627435' as rcode from dual union
+		 SELECT 'Ricardo Puig' as name, '434770' as rcode from dual union
+		 SELECT 'Richard Silva' as name, '699871' as rcode from dual union
+		 SELECT 'Rogerio Paschoalin' as name, '591061' as rcode from dual union
+		 SELECT 'Rosimar Sales' as name, '705195' as rcode from dual union
+		 SELECT 'Suzan Barreto' as name,'588244' as rcode from dual union
+		 SELECT 'Fernando Alberto Abreu Gomes' as name,'655712' as rcode from dual union
+		 SELECT 'Americo Coltacci' as name,'318680' as rcode from dual union
+		 SELECT 'Sandra Andrade' as name,'649118' as rcode from dual union
+		 SELECT 'Everson Menezes' as name, '716048' as rcode from dual union
+		 SELECT 'Edson Ushijima' as name, '717511' as rcode from dual union
+		 SELECT 'Ana Rodriguez' as name, '587872' as rcode from dual union 
+		 SELECT 'Rosely Kian Kimura' as name, '649070' as rcode from dual) gest 
+WHERE project.is_active = 1 AND dm.registration_code=gest.rcode AND project.delivery_manager_id=dm.id AND
+      project.id NOT IN (SELECT component.project_id FROM component) AND 
+      project.id NOT IN (SELECT r.project_id  FROM `s2m-devops`.acronym_restriction r) AND
+project.acronym  NOT IN(
+"MZ",
+"(CMM)",
+"A8",
+"AAM",
+"ACT",
+"ADP",
+"AE",
+"AFC",
+"AI",
+"AKV",
+"ALM",
+"AOF",
+"APF",
+"APL",
+"APU",
+"AR",
+"ARC",
+"AT",
+"ATE",
+"ATM",
+"ATX",
+"AUC",
+"AYV",
+"BA",
+"BAF",
+"BBW",
+"BC",
+"BCL",
+"BCN",
+"BDF",
+"BDI",
+"BDP",
+"BDQ",
+"BG",
+"BHS",
+"BHV",
+"BIO",
+"BJ",
+"BLK",
+"BMA",
+"BME",
+"BMP",
+"BMS",
+"BO",
+"BOL",
+"BP",
+"BPO",
+"BRH",
+"BSR",
+"BUO",
+"BUS",
+"BW",
+"BZS",
+"CAC",
+"CCM",
+"CCY",
+"CDI",
+"CEF",
+"CIC",
+"CIP",
+"CIZ",
+"CKF",
+"COM",
+"CPA",
+"CPC",
+"CPT",
+"CSG",
+"CSS",
+"CY",
+"D5B",
+"D6",
+"DCD",
+"DDS",
+"DG",
+"DJ",
+"DK",
+"DL",
+"DLB",
+"DO",
+"DQ",
+"DWR",
+"DWZ",
+"DX",
+"DYY",
+"E2",
+"E8",
+"E9",
+"ECO",
+"ECS",
+"EF",
+"EG",
+"EM",
+"EPC",
+"ERS",
+"ESD",
+"ESF",
+"ETC",
+"EV",
+"EWZ",
+"EXA",
+"EXYON",
+"EY",
+"F6",
+"FB",
+"FBO",
+"FCI",
+"FEA",
+"FEC",
+"FEP",
+"FI",
+"FIN",
+"FNN",
+"FPN",
+"FX",
+"G2",
+"G3",
+"G4",
+"G6",
+"GB",
+"GC",
+"GCM",
+"GCT",
+"GCW",
+"GDD",
+"GESTI",
+"GF",
+"GFN",
+"GIC",
+"GIP",
+"GL",
+"GLB",
+"GOL",
+"GOP",
+"GPC",
+"GPF",
+"GPI",
+"GRR",
+"GT",
+"GTI",
+"GU",
+"GUC",
+"HA",
+"HE",
+"HH",
+"HMR",
+"HP",
+"HQ",
+"HX",
+"I3",
+"I7",
+"IBE",
+"IBF",
+"IBJ",
+"IFR",
+"IK",
+"IMF",
+"IR",
+"IX",
+"IY",
+"J29",
+"JB",
+"JG",
+"JH",
+"JL",
+"JM",
+"JP",
+"JU",
+"JX",
+"K7",
+"KM",
+"KMB",
+"KPV",
+"KYC",
+"KZ",
+"LD",
+"LFC",
+"LG",
+"LGL",
+"LH",
+"LL",
+"LY",
+"LZ",
+"MBB",
+"MBJ",
+"MC",
+"MCS",
+"MDO",
+"MH",
+"MI",
+"MIF",
+"MO",
+"MOB",
+"MOC",
+"MP",
+"MPA",
+"MSG",
+"MX",
+"MZ",
+"N7",
+"NE",
+"NI",
+"NJ",
+"NKM",
+"NMW",
+"NQ",
+"NU",
+"NUF",
+"NUW",
+"NY",
+"NZ",
+"O7",
+"OCC",
+"ODO",
+"ODS",
+"OE",
+"OG",
+"OJ",
+"OQ",
+"OS",
+"OSG",
+"OX",
+"OY",
+"P9",
+"PB",
+"PBF",
+"PBX",
+"PCC",
+"PCI",
+"PCJ",
+"PDI",
+"PDM",
+"PE",
+"PFX",
+"PG",
+"PIB",
+"PIN",
+"PIP",
+"PJ",
+"PK",
+"PKN",
+"PNE",
+"PV",
+"PVD",
+"PZ",
+"Q1",
+"Q9",
+"QQ",
+"QRM",
+"R2",
+"RB",
+"RCS",
+"RDR",
+"REG",
+"RF",
+"ROC",
+"RP",
+"RPC",
+"RSV",
+"RX",
+"S9",
+"SAC",
+"SBC",
+"SBK",
+"SCM",
+"SDG",
+"SDI",
+"SGD",
+"SGP",
+"SIA",
+"SIC",
+"SN",
+"SNI",
+"SPA",
+"SPD",
+"SR",
+"SRK",
+"SSA",
+"SSD",
+"SSI",
+"SSV",
+"STI",
+"SZS",
+"T5",
+"TAO",
+"TC",
+"TD",
+"TFC",
+"TH",
+"TJ",
+"TY",
+"TZ",
+"UG",
+"UL",
+"ULL",
+"UND",
+"URA",
+"UW",
+"UY",
+"UZ",
+"VA",
+"VAB",
+"VC",
+"VCS",
+"VE",
+"VF",
+"VH",
+"VI",
+"VJ",
+"VQ",
+"VR",
+"VRS",
+"VS",
+"VT",
+"VU",
+"VX",
+"WC",
+"WCC",
+"WDE",
+"WDQ",
+"WFS",
+"WH",
+"WHA",
+"WIC",
+"WO",
+"WOF",
+"WPC",
+"WWA",
+"WWB",
+"WZ",
+"XF",
+"Y3",
+"YA",
+"YC",
+"YD",
+"YE",
+"YF",
+"YH",
+"YJ",
+"YK",
+"YL",
+"YM",
+"YMB",
+"YN",
+"YO",
+"YP",
+"YQ",
+"YQB",
+"YS",
+"YU",
+"YZ",
+"ZT")
